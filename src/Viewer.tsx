@@ -108,21 +108,22 @@ export default function Viewer({ connection }: { connection: Connection }) {
 function GrabbableCube({ grabbed }: { grabbed: RefObject<boolean> }) {
   useEffect(() => () => { grabbed.current = false }, [grabbed])
   return (
-    <Handle
-      position={[0, 1.2, -0.8]}
-      scale={false}
-      multitouch={false}
-      apply={(state, target) => {
-        grabbed.current = !state.last
-        target.position.copy(state.current.position)
-        target.quaternion.copy(state.current.quaternion)
-      }}
-    >
-      <mesh>
-        <boxGeometry args={[0.22, 0.22, 0.22]} />
-        <meshStandardMaterial color="#b8f56c" roughness={0.28} metalness={0.15} />
-      </mesh>
-    </Handle>
+    <group position={[0, 1.2, -0.8]}>
+      <Handle
+        scale={false}
+        multitouch={false}
+        apply={(state, target) => {
+          grabbed.current = !state.last
+          target.position.copy(state.current.position)
+          target.quaternion.copy(state.current.quaternion)
+        }}
+      >
+        <mesh>
+          <boxGeometry args={[0.22, 0.22, 0.22]} />
+          <meshStandardMaterial color="#b8f56c" roughness={0.28} metalness={0.15} />
+        </mesh>
+      </Handle>
+    </group>
   )
 }
 
