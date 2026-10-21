@@ -4,6 +4,8 @@ import { WebSocketServer, WebSocket } from 'ws'
 
 const ROOM = /^[A-HJ-NP-Z2-9]{8}$/
 const ID = /^[a-zA-Z0-9-]{8,64}$/
+const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || '')
+  .split(',').map(s => s.trim()).filter(Boolean)
 
 export function createHub(store) {
   const clients = new Set()
@@ -19,7 +21,10 @@ export function createHub(store) {
     const pathname = new URL(req.url, 'http://localhost').pathname
     const host = req.headers['x-forwarded-host'] || req.headers.host
     let validOrigin = false
-    try { validOrigin = new URL(req.headers.origin).host === host } catch { /* Reject non-browser origins. */ }
+    try {
+      const origin = new URL(req.headers.origin)
+      validOrigin = origin.host === host || ALLOWED_ORIGINS.includes(origin.origin)
+    } catch { /* Reject non-browser origins. */ }
     if (pathname !== '/api/socket' || !validOrigin) {
       socket.write('HTTP/1.1 403 Forbidden\r\n\r\n')
       socket.destroy()
@@ -48,7 +53,7 @@ export function createHub(store) {
     let windowStart = Date.now()
     const joinTimeout = setTimeout(() => { if (!client.room) socket.close(1008, 'Join required') }, 10000)
     joinTimeout.unref()
-    socket.on('error', () => {})
+    socket.on('error', () => { })
     socket.on('pong', () => { client.alive = true })
     socket.on('message', (raw, binary) => {
       if (Date.now() - windowStart > 10000) { messages = 0; windowStart = Date.now() }
@@ -91,7 +96,7 @@ export function createHub(store) {
       // Wait for an in-flight join before removing its presence.
       void queue.finally(() => {
         if (client.room) return store.remove(client.room, client.id)
-      }).catch(() => {})
+      }).catch(() => { })
     })
   })
 
