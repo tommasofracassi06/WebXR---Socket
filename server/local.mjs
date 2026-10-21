@@ -4,7 +4,8 @@ const store = createStore()
 await store.ready
 const hub = createHub(store)
 const port = Number(process.env.PORT || 3001)
-hub.server.listen(port, '127.0.0.1', () => console.log(`WebSocket server: http://127.0.0.1:${port}/api/socket`))
+const host = process.env.HOST || '0.0.0.0'
+hub.server.listen(port, host, () => console.log(`WebSocket server in ascolto su ${host}:${port}/api/socket`))
 for (const signal of ['SIGINT', 'SIGTERM']) process.on(signal, async () => {
   await hub.close()
   await store.close()
