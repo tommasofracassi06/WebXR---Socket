@@ -32,8 +32,9 @@ export function useRoom(room: string, role: Role) {
     }
     function connect() {
       if (disposed) return
-      const url = new URL('/api/socket', window.location.href)
-      url.protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
+      const configured = import.meta.env.VITE_WS_URL as string | undefined
+      const url = new URL(configured || '/api/socket', window.location.href)
+      if (!configured) url.protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
       const ws = new WebSocket(url)
       socket.current = ws
       timeout = setTimeout(() => ws.close(), 12000)
